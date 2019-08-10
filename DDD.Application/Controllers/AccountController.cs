@@ -14,14 +14,15 @@ namespace DDD.Application.Controllers
     [ApiController]
     public class AccountController : ControllerBase
     {
-        private BaseService<Account> service = new BaseService<Account>();
+        private BaseService<Account> accountService = new BaseService<Account>();
+        private BaseService<User> userService = new BaseService<User>();
 
         [HttpPost]
         public IActionResult Post([FromBody]Account item)
         {
             try
             {
-                service.Post<AccountValidator>(item);
+                accountService.Post<AccountValidator>(item);
 
                 return new ObjectResult(item.Id);
             }
@@ -40,7 +41,7 @@ namespace DDD.Application.Controllers
         {
             try
             {
-                service.Put<AccountValidator>(item);
+                accountService.Put<AccountValidator>(item);
 
                 return new ObjectResult(item);
             }
@@ -60,7 +61,7 @@ namespace DDD.Application.Controllers
         {
             try
             {
-                service.Delete(id);
+                accountService.Delete(id);
 
                 return new NoContentResult();
             }
@@ -80,11 +81,11 @@ namespace DDD.Application.Controllers
         {
             try
             {
-                var account = service.Get(accountId);
+                var account = accountService.Get(accountId);
 
                 account.Debit(amount);
 
-                service.Put<AccountValidator>(account);
+                accountService.Put<AccountValidator>(account);
 
                 return new ObjectResult("OK");
             }
@@ -104,11 +105,19 @@ namespace DDD.Application.Controllers
         {
             try
             {
-                var account = service.Get(accountId);
+                var account = accountService.Get(accountId);
 
                 account.Credit(amount);
 
-                service.Put<AccountValidator>(account);
+                var user = userService.Get(account.UserId);
+
+                if (amount > 50000)
+                {
+                    //Aviso à COAF sobre movimentações acima do limite de 50000 reais
+                    Console.WriteLine($"Movimentação de crédito de R${amount} com o CPF {user.Cpf}");
+                }
+
+                accountService.Put<AccountValidator>(account);
 
                 return new ObjectResult("OK");
             }
@@ -127,7 +136,7 @@ namespace DDD.Application.Controllers
         {
             try
             {
-                return new ObjectResult(service.Get());
+                return new ObjectResult(accountService.Get());
             }
             catch (Exception ex)
             {
@@ -141,7 +150,7 @@ namespace DDD.Application.Controllers
         {
             try
             {
-                return new ObjectResult(service.Get(id));
+                return new ObjectResult(accountService.Get(id));
             }
             catch (ArgumentException ex)
             {
