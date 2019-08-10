@@ -12,7 +12,7 @@ namespace DDD.Service.Validators
                     .NotNull()
                     .OnAnyFailure(x =>
                     {
-                        throw new ArgumentNullException("Can't found the object.");
+                        throw new ArgumentNullException("Can't find the object.");
                     });
 
             RuleFor(c => c.Cpf)

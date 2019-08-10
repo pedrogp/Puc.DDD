@@ -2,25 +2,26 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
 using DDD.Domain.Entities;
 using DDD.Service.Services;
 using DDD.Service.Validators;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace DDD.Application.Controllers
 {
-    [Produces("application/json")]
     [Route("api/[controller]")]
-    public class UserController : ControllerBase
+    [ApiController]
+    public class AccountController : ControllerBase
     {
-        private BaseService<User> service = new BaseService<User>();
+        private BaseService<Account> service = new BaseService<Account>();
 
         [HttpPost]
-        public IActionResult Post([FromBody] User item)
+        public IActionResult Post([FromBody]Account item)
         {
             try
             {
-                service.Post<UserValidator>(item);
+                service.Post<AccountValidator>(item);
 
                 return new ObjectResult(item.Id);
             }
@@ -35,11 +36,11 @@ namespace DDD.Application.Controllers
         }
 
         [HttpPut]
-        public IActionResult Put([FromBody] User item)
+        public IActionResult Put([FromBody]Account item)
         {
             try
             {
-                service.Put<UserValidator>(item);
+                service.Put<AccountValidator>(item);
 
                 return new ObjectResult(item);
             }
@@ -64,6 +65,54 @@ namespace DDD.Application.Controllers
                 return new NoContentResult();
             }
             catch (ArgumentException ex)
+            {
+                return NotFound(ex);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        }
+
+        [HttpPost]
+        [Route("{accountId}/Debit/{amount}")]
+        public IActionResult Debit(int accountId, decimal amount)
+        {
+            try
+            {
+                var account = service.Get(accountId);
+
+                account.Debit(amount);
+
+                service.Put<AccountValidator>(account);
+
+                return new ObjectResult("OK");
+            }
+            catch (ArgumentNullException ex)
+            {
+                return NotFound(ex);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        }
+
+        [HttpPost]
+        [Route("{accountId}/Credit/{amount}")]
+        public IActionResult Credit(int accountId, decimal amount)
+        {
+            try
+            {
+                var account = service.Get(accountId);
+
+                account.Credit(amount);
+
+                service.Put<AccountValidator>(account);
+
+                return new ObjectResult("OK");
+            }
+            catch (ArgumentNullException ex)
             {
                 return NotFound(ex);
             }

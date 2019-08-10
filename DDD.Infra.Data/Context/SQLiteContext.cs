@@ -23,6 +23,7 @@ namespace DDD.Infra.Data.Context
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<User>(new UserMap().Configure);
+            modelBuilder.Entity<Account>(new AccountMap().Configure);
         }
     }
 }
